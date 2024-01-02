@@ -1,0 +1,62 @@
+@import "@arcgis/core/assets/esri/themes/dark/main.css";
+@import "@esri/calcite-components/dist/calcite/calcite.css";
+
+html,
+body,
+#viewDiv {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.custom-theme {
+  --calcite-ui-brand: #8087f2;
+  --calcite-ui-brand-hover: #3f46a9;
+  --calcite-ui-brand-press: #3f46a9;
+  background-color: var(--calcite-ui-background);
+}
+
+calcite-table {
+  margin: 0.5rem 1rem;
+  width: calc(100% - 2rem);
+  height: 100%;
+  position: relative;
+}
+
+calcite-notice {
+  width: calc(100% - 1rem);
+  margin: 0.5rem;
+}
+
+calcite-flow {
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.esri-feature-templates > div > .esri-item-list__scroller {
+  overflow-y: visible;
+}
+
+#table-panel {
+  --calcite-shell-panel-height: auto;
+  --calcite-shell-panel-min-height: auto;
+  --calcite-shell-panel-max-height: auto;
+}
+
+#start-panel {
+  --calcite-shell-panel-min-width: 340px;
+  --calcite-shell-panel-width: auto;
+  --calcite-shell-panel-max-width: 440px;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 8px;
+  background-color: #aaa;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #000;
+}

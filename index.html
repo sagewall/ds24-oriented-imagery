@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/esri.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <calcite-shell class="calcite-mode-dark custom-theme">
+      <calcite-navigation slot="header">
+        <calcite-navigation-logo
+          slot="logo"
+          heading="Munich City Management"
+          thumbnail="https://jsapi.maps.arcgis.com/sharing/rest/content/items/0aa6873f3d9842b59ef78bb848547199/data"
+        ></calcite-navigation-logo>
+        <calcite-menu slot="content-end">
+          <calcite-menu-item
+            active
+            text="City map"
+            icon-start="map-pin"
+            text-enabled
+            id="create-view"
+          ></calcite-menu-item>
+          <calcite-menu-item
+            text="Another page"
+            icon-start="information"
+            text-enabled
+            id="table-view"
+          ></calcite-menu-item>
+        </calcite-menu>
+        <calcite-navigation-user
+          slot="user"
+          full-name="Julie Powell"
+          username="julieP"
+          thumbnail="https://jsapi.maps.arcgis.com/sharing/rest/content/items/b47d8dd3817e4c6e94d9f0f468f54fb3/data"
+        ></calcite-navigation-user>
+      </calcite-navigation>
+      <calcite-shell-panel slot="panel-start" width-scale="m" id="start-panel">
+        <calcite-flow id="workorder-flow">
+          <calcite-flow-item
+            heading="Incident review"
+            id="imagery-review-step"
+            description="Use this tool to review incidents and create work orders. Start by clicking on the map to view street-level imagery."
+          >
+            <calcite-panel id="oi-viewer-block">
+              <calcite-icon
+                slot="icon"
+                icon="oriented-imagery-widget"
+              ></calcite-icon>
+              <div
+                id="oi-container"
+                style="height: 100%; width: 100%; position: relative"
+              ></div>
+              <calcite-button width="full" id="btnUpdate" slot="footer">
+                Create work order
+              </calcite-button>
+            </calcite-panel>
+          </calcite-flow-item>
+        </calcite-flow>
+      </calcite-shell-panel>
+      <calcite-shell content-behind style="display: block; position: relative">
+        <div id="viewDiv"></div>
+        <calcite-shell-panel
+          slot="panel-top"
+          layout="horizontal"
+          position="end"
+          id="table-panel"
+          display-mode="float"
+          collapsed
+        >
+        </calcite-shell-panel>
+        <calcite-shell-panel
+          slot="panel-bottom"
+          layout="horizontal"
+          position="end"
+          id="table-panel"
+          display-mode="float"
+          style="margin-bottom: 1rem"
+        >
+          <calcite-panel
+            heading="Table of records"
+            description="6 records"
+            collapsible
+            collapsed
+          >
+            <calcite-table
+              caption="Work orders"
+              id="table"
+              numbered
+              selection-mode="multiple"
+              page-size="4"
+              layout="fixed"
+            >
+              <calcite-action-bar
+                slot="selection-actions"
+                layout="horizontal"
+                expand-disabled
+              >
+                <calcite-action text="Analyze" icon="layer"></calcite-action>
+                <calcite-action text="Copy" icon="copy"></calcite-action>
+              </calcite-action-bar>
+              <calcite-table-row slot="table-header">
+                <calcite-table-header
+                  heading="Request type"
+                ></calcite-table-header>
+                <calcite-table-header
+                  heading="Total"
+                  alignment="end"
+                ></calcite-table-header>
+                <calcite-table-header heading="Progress"></calcite-table-header>
+                <calcite-table-header heading="Assign"></calcite-table-header>
+              </calcite-table-row>
+            </calcite-table>
+          </calcite-panel>
+        </calcite-shell-panel>
+      </calcite-shell>
+    </calcite-shell>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
