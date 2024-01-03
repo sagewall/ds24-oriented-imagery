@@ -16,10 +16,12 @@ defineCustomElements(window, {
   resourcesUrl: "https://js.arcgis.com/calcite-components/2.1.0/assets",
 });
 
+let featureLayer;
+
 const map = new WebMap({
   portalItem: {
     // autocasts as new PortalItem()
-    id: "4eab79e1e2354b69adc4eda847b4de16",
+    id: "518d922fcc8a4b4bbf7586cff6dacbae",
   },
 });
 const view = new MapView({
@@ -30,17 +32,15 @@ const view = new MapView({
 map.load().then(async () => {
   await map.basemap.loadAll();
   for (const layer of map.basemap.baseLayers) {
-    //layer.effect = "grayscale(75%)"
+    // layer.effect = "grayscale(75%)";
+    layer.effect = "bloom(50%)";
   }
 });
-/*************************************
- LAYERS
-*************************************/
-let featureLayer;
-const imageryItemID = "46c41012717549088957ef5ed6c6091f"; //Walchensee
+
 /*************************************
  Widgets/components
 *************************************/
+// LayerList
 const layerList = new LayerList({
   view: view,
   selectionMode: "single",
@@ -50,6 +50,8 @@ const expand = new Expand({
   content: layerList,
 });
 view.ui.add(expand, "bottom-left");
+
+// OrientedImageryViewer
 const orientedImageryViewer = new OrientedImageryViewer({
   view,
   disabled: true,
@@ -58,7 +60,7 @@ const orientedImageryViewer = new OrientedImageryViewer({
   container: "oi-container",
 });
 const flow = document.getElementById("workorder-flow");
-const imageryReviewStep = document.querySelectorAll("imagery-review-step");
+
 /*************************************
  Popup setup
 *************************************/
@@ -68,44 +70,32 @@ const contentWidget = new CustomContent({
     const viewImageryBtn = document.createElement("calcite-button");
     viewImageryBtn.setAttribute("appearance", "outline");
     viewImageryBtn.innerText = "view available imagery";
-    viewImageryBtn.classList.add("custom-theme");
     viewImageryBtn.onclick = () => {
       orientedImageryViewer?.loadBestImage(event.graphic.geometry);
     };
     return viewImageryBtn;
   },
 });
-const fieldDisplay = {
-  type: "fields",
-  fieldInfos: [
-    {
-      fieldName: "requesttype",
-      label: "Category",
-    },
-    {
-      fieldName: "Category",
-      label: "Request type",
-    },
-  ],
-};
+
 let textElement = {
   type: "text",
-  text: 'This work order is to resolve an issue with {Category} ({requesttype}).<br><br>Notes: "{details}"',
+  text: 'This work order is to resolve an issue with {Category}.<br><br>Notes: "{details}"',
 };
 const template = new PopupTemplate({
   outFields: ["*"],
   title: "Work order",
   content: [textElement, contentWidget],
 });
+
 /*************************************
  Now wire it together
 *************************************/
 view.on("layerview-create", ({ layer, layerView }) => {
   if (layer.type === "oriented-imagery") {
     layer.renderer = {
-      type: "simple", // autocasts as new SimpleRenderer()
+      type: "simple",
       symbol: {
-        type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+        type: "simple-marker",
         size: 6,
         color: [104, 108, 110, 0.5],
         outline: {
@@ -121,7 +111,6 @@ view.on("layerview-create", ({ layer, layerView }) => {
     reactiveUtils.when(
       () => !layerView.dataUpdating,
       () => {
-        console.log("let's update the table.");
         updateTable(layer);
       }
     );
@@ -153,78 +142,100 @@ document.getElementById("btnUpdate").onclick = async () => {
   //start the work order flow
   createWorkOrderFlow();
 };
+
 /*************************************
  Table setup
 *************************************/
 const table = document.querySelector("calcite-table");
 
-function updateTable(layer) {
+async function updateTable(layer) {
+  const totalNumberOfWorkOrders = await layer.queryFeatureCount();
+
+  table.querySelectorAll("calcite-table-row").forEach((row) => {
+    if (row.slot !== "table-header") {
+      row.remove();
+    }
+  });
+
+  const categoryCodedValues = [];
+  layer.fields.forEach((field) => {
+    if (field.name === "Category" && field.domain.type === "coded-value") {
+      field.domain.codedValues.forEach((codedValue) => {
+        categoryCodedValues.push(codedValue);
+      });
+    }
+  });
+
   const query = layer.createQuery();
   query.outStatistics = [
     {
-      onStatisticField: "requesttype",
-      outStatisticFieldName: "count_requesttype",
+      onStatisticField: "Category",
+      outStatisticFieldName: "count_Category",
       statisticType: "count",
     },
   ];
   query.groupByFieldsForStatistics = ["Category"];
-  const cartegoryCodedNames = [];
-  layer.fields.forEach((field) => {
-    if (!field.domain || field.name === "requesttype") {
-      return;
-    }
-    let domain = field.domain;
-    if (domain.type === "coded-value") {
-      domain.codedValues.forEach((codeValue) => {
-        cartegoryCodedNames.push(codeValue);
-      });
-    }
-  });
-  layer.queryFeatures(query).then(function (results) {
-    //const stats = results.features[0].attributes;
-    results.features.forEach(function (feature) {
+
+  layer.queryFeatures(query).then((results) => {
+    results.features.forEach((feature) => {
       let tableRow = document.createElement("calcite-table-row");
       const code = feature.attributes.Category;
-      const prettyCategory = cartegoryCodedNames.find(
+      const categoryCodedValue = categoryCodedValues.find(
         (value) => value.code === code
       );
-      tableRow.innerHTML =
-        `<calcite-table-cell>${prettyCategory.name}</calcite-table-cell>` +
-        `<calcite-table-cell alignment="end">${feature.attributes.count_requesttype}</calcite-table-cell>` +
-        `<calcite-table-cell><calcite-meter fill-type="single" value-label label="progress" value="${
-          code * 25
-        }" max="100" unit-label="%"
-              value-label-type="units" scale="s"></calcite-meter></calcite-table-cell>` +
-        //`<calcite-table-cell alignment="center"><calcite-button icon-start="oriented-imagery-widget" round></calcite-button></calcite-table-cell>`;
-        `<calcite-table-cell><calcite-select><calcite-option value="Euan">Euan</calcite-option><calcite-option value="Dave">Dave</calcite-option></calcite-select></calcite-table-cell>`;
+      let nameTableCell = document.createElement("calcite-table-cell");
+      nameTableCell.innerHTML = categoryCodedValue.name;
+      tableRow.append(nameTableCell);
+
+      let countTableCell = document.createElement("calcite-table-cell");
+      countTableCell.innerHTML = feature.attributes.count_Category;
+      tableRow.append(countTableCell);
+
+      let percentTableCell = document.createElement("calcite-table-cell");
+      let meter = document.createElement("calcite-meter");
+      meter.fillType = "single";
+      meter.valueLabel = true;
+      meter.label = "percent";
+      meter.value = Math.round(
+        (feature.attributes.count_Category / totalNumberOfWorkOrders) * 100
+      );
+      meter.max = 100;
+      meter.unitLabel = "%";
+      meter.valueLabelType = "units";
+      meter.scale = "s";
+      percentTableCell.append(meter);
+      tableRow.append(percentTableCell);
+
       table.append(tableRow);
     });
-    console.log(results.features);
   });
 }
+
 /*************************************
  Setup flow
 *************************************/
 async function createWorkOrderFlow() {
   //Create UI
   const workOrderFlowItem = document.createElement("calcite-flow-item");
-  //workOrderFlowItem.style = "height: 100%; width: 100%; position: relative; padding: 5px; overflow: hidden;"
   workOrderFlowItem.heading = "Create work order";
   workOrderFlowItem.description = "Please fill out this form";
+
   const notice = document.createElement("calcite-notice");
   notice.open = true;
   notice.width = "full";
   workOrderFlowItem.append(notice);
+
   const noticeMessage = document.createElement("span");
   noticeMessage.slot = "message";
   noticeMessage.innerText = "What is the problem?";
   notice.append(noticeMessage);
+
   const editor = new Editor({
     view: view,
     container: workOrderFlowItem,
   });
+
   if (orientedImageryViewer.referencePoint) {
-    console.log(orientedImageryViewer.referencePoint);
     const featureToCreate = new Graphic({
       geometry: new Point({
         x: orientedImageryViewer.referencePoint.x,
@@ -236,37 +247,25 @@ async function createWorkOrderFlow() {
     await editor.viewModel.startCreateFeaturesWorkflowAtFeatureEdit({
       initialFeature: featureToCreate,
     });
-    const activeWorkflow = editor.viewModel.activeWorkflow;
+
     editor.viewModel.on("workflow-commit", () => {
-      killEditingSesh();
+      cancelWorkflow();
     });
   } else {
-    console.log("need to select reference point first.");
+    console.warning("need to select reference point first.");
   }
 
-  function killEditingSesh() {
+  workOrderFlowItem.addEventListener("calciteFlowItemBack", cancelWorkflow);
+  flow.append(workOrderFlowItem);
+
+  function cancelWorkflow() {
     if (editor) {
       const { activeWorkflow } = editor.viewModel;
-      editor.cancelWorkflow({
-        force: true,
-      });
-      activeWorkflow?.destroy();
+      if (activeWorkflow) {
+        editor.cancelWorkflow({
+          force: true,
+        });
+      }
     }
   }
-  workOrderFlowItem.addEventListener("calciteFlowItemBack", killEditingSesh);
-  flow.append(workOrderFlowItem);
-}
-document
-  .getElementById("create-view")
-  .addEventListener("calciteMenuItemSelect", enableMapView);
-
-function enableMapView() {
-  document.getElementById("table-panel").setAttribute("collapsed", "true");
-}
-document
-  .getElementById("table-view")
-  .addEventListener("calciteMenuItemSelect", enableTableView);
-
-function enableTableView() {
-  document.getElementById("table-panel").removeAttribute("collapsed");
 }

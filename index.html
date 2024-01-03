@@ -7,33 +7,19 @@
     <title>Vite App</title>
   </head>
   <body>
-    <calcite-shell class="calcite-mode-dark custom-theme">
+    <calcite-shell class="calcite-mode-dark">
       <calcite-navigation slot="header">
         <calcite-navigation-logo
           slot="logo"
           heading="Munich City Management"
           thumbnail="https://jsapi.maps.arcgis.com/sharing/rest/content/items/0aa6873f3d9842b59ef78bb848547199/data"
         ></calcite-navigation-logo>
-        <calcite-menu slot="content-end">
-          <calcite-menu-item
-            active
-            text="City map"
-            icon-start="map-pin"
-            text-enabled
-            id="create-view"
-          ></calcite-menu-item>
-          <calcite-menu-item
-            text="Another page"
-            icon-start="information"
-            text-enabled
-            id="table-view"
-          ></calcite-menu-item>
-        </calcite-menu>
+
         <calcite-navigation-user
           slot="user"
-          full-name="Julie Powell"
-          username="julieP"
-          thumbnail="https://jsapi.maps.arcgis.com/sharing/rest/content/items/b47d8dd3817e4c6e94d9f0f468f54fb3/data"
+          full-name="Sage Wall"
+          username="swall"
+          thumbnail="/sage.jpg"
         ></calcite-navigation-user>
       </calcite-navigation>
       <calcite-shell-panel slot="panel-start" width-scale="m" id="start-panel">
@@ -65,7 +51,6 @@
           slot="panel-top"
           layout="horizontal"
           position="end"
-          id="table-panel"
           display-mode="float"
           collapsed
         >
@@ -74,21 +59,13 @@
           slot="panel-bottom"
           layout="horizontal"
           position="end"
-          id="table-panel"
           display-mode="float"
           style="margin-bottom: 1rem"
         >
-          <calcite-panel
-            heading="Table of records"
-            description="6 records"
-            collapsible
-            collapsed
-          >
+          <calcite-panel heading="Work Orders" collapsible collapsed>
             <calcite-table
               caption="Work orders"
               id="table"
-              numbered
-              selection-mode="multiple"
               page-size="4"
               layout="fixed"
             >
@@ -101,15 +78,12 @@
                 <calcite-action text="Copy" icon="copy"></calcite-action>
               </calcite-action-bar>
               <calcite-table-row slot="table-header">
-                <calcite-table-header
-                  heading="Request type"
-                ></calcite-table-header>
+                <calcite-table-header heading="Category"></calcite-table-header>
                 <calcite-table-header
                   heading="Total"
                   alignment="end"
                 ></calcite-table-header>
-                <calcite-table-header heading="Progress"></calcite-table-header>
-                <calcite-table-header heading="Assign"></calcite-table-header>
+                <calcite-table-header heading="Percent"></calcite-table-header>
               </calcite-table-row>
             </calcite-table>
           </calcite-panel>

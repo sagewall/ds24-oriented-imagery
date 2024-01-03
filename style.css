@@ -10,13 +10,6 @@ body,
   width: 100%;
 }
 
-.custom-theme {
-  --calcite-ui-brand: #8087f2;
-  --calcite-ui-brand-hover: #3f46a9;
-  --calcite-ui-brand-press: #3f46a9;
-  background-color: var(--calcite-ui-background);
-}
-
 calcite-table {
   margin: 0.5rem 1rem;
   width: calc(100% - 2rem);
