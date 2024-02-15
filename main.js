@@ -71,7 +71,7 @@ view.when(async () => {
     () => !workOrdersLayerView.dataUpdating,
     () => {
       updateTable(workOrdersLayer);
-    }
+    },
   );
 });
 
@@ -138,11 +138,7 @@ view.on("click", (event) => {
     })
     .then((response) => {
       const { results } = response;
-      if (
-        results.length > 0 &&
-        results[0].graphic &&
-        results[0].graphic.layer === workOrdersLayer
-      ) {
+      if (results.length > 0 && results[0].graphic && results[0].graphic.layer === workOrdersLayer) {
         view.openPopup({
           location: event.mapPoint,
           features: [results[0].graphic],
@@ -195,9 +191,7 @@ async function updateTable(layer) {
     results.features.forEach((feature) => {
       let tableRow = document.createElement("calcite-table-row");
       const code = feature.attributes.Category;
-      const categoryCodedValue = categoryCodedValues.find(
-        (value) => value.code === code
-      );
+      const categoryCodedValue = categoryCodedValues.find((value) => value.code === code);
       let nameTableCell = document.createElement("calcite-table-cell");
       nameTableCell.innerHTML = categoryCodedValue.name;
       tableRow.append(nameTableCell);
@@ -211,9 +205,7 @@ async function updateTable(layer) {
       meter.fillType = "single";
       meter.valueLabel = true;
       meter.label = "percent";
-      meter.value = Math.round(
-        (feature.attributes.count_Category / totalNumberOfWorkOrders) * 100
-      );
+      meter.value = Math.round((feature.attributes.count_Category / totalNumberOfWorkOrders) * 100);
       meter.max = 100;
       meter.unitLabel = "%";
       meter.valueLabelType = "units";
