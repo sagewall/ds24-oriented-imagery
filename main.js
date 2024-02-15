@@ -48,15 +48,15 @@ const workOrdersLayer = new FeatureLayer({
 const map = new Map({
   basemap: "satellite",
   layers: [orientedImageryLayer, footprintsLayer, workOrdersLayer],
-  spatialReference: {
-    wkid: 3346,
-  },
 });
 
 const view = new MapView({
   map: map,
   container: "viewDiv",
   popupEnabled: false,
+  spatialReference: {
+    wkid: 3346,
+  },
 });
 
 view.when(async () => {
