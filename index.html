@@ -11,7 +11,7 @@
       <calcite-navigation slot="header">
         <calcite-navigation-logo
           slot="logo"
-          heading="Munich City Management"
+          heading="Vilnius City Management"
           thumbnail="https://jsapi.maps.arcgis.com/sharing/rest/content/items/0aa6873f3d9842b59ef78bb848547199/data"
         ></calcite-navigation-logo>
 
@@ -30,19 +30,9 @@
             description="Use this tool to review incidents and create work orders. Start by clicking on the map to view street-level imagery."
           >
             <calcite-panel id="oi-viewer-block">
-              <calcite-icon
-                slot="icon"
-                icon="oriented-imagery-widget"
-              ></calcite-icon>
-              <div
-                id="oi-container"
-                style="height: 100%; width: 100%; position: relative"
-              ></div>
-              <calcite-button
-                width="full"
-                id="create-work-flow-button"
-                slot="footer"
-              >
+              <calcite-icon slot="icon" icon="oriented-imagery-widget"></calcite-icon>
+              <div id="oi-container" style="height: 100%; width: 100%; position: relative"></div>
+              <calcite-button width="full" id="create-work-flow-button" slot="footer">
                 Create work order
               </calcite-button>
             </calcite-panel>
@@ -51,13 +41,7 @@
       </calcite-shell-panel>
       <calcite-shell content-behind style="display: block; position: relative">
         <div id="viewDiv"></div>
-        <calcite-shell-panel
-          slot="panel-top"
-          layout="horizontal"
-          position="end"
-          display-mode="float"
-          collapsed
-        >
+        <calcite-shell-panel slot="panel-top" layout="horizontal" position="end" display-mode="float" collapsed>
         </calcite-shell-panel>
         <calcite-shell-panel
           slot="panel-bottom"
@@ -67,26 +51,14 @@
           style="margin-bottom: 1rem"
         >
           <calcite-panel heading="Work Orders" collapsible collapsed>
-            <calcite-table
-              caption="Work orders"
-              id="table"
-              page-size="4"
-              layout="fixed"
-            >
-              <calcite-action-bar
-                slot="selection-actions"
-                layout="horizontal"
-                expand-disabled
-              >
+            <calcite-table caption="Work orders" id="table" page-size="4" layout="fixed">
+              <calcite-action-bar slot="selection-actions" layout="horizontal" expand-disabled>
                 <calcite-action text="Analyze" icon="layer"></calcite-action>
                 <calcite-action text="Copy" icon="copy"></calcite-action>
               </calcite-action-bar>
               <calcite-table-row slot="table-header">
                 <calcite-table-header heading="Category"></calcite-table-header>
-                <calcite-table-header
-                  heading="Total"
-                  alignment="end"
-                ></calcite-table-header>
+                <calcite-table-header heading="Total" alignment="end"></calcite-table-header>
                 <calcite-table-header heading="Percent"></calcite-table-header>
               </calcite-table-row>
             </calcite-table>

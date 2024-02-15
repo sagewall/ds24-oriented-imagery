@@ -25,12 +25,13 @@ const orientedImageryLayer = new OrientedImageryLayer({
     symbol: {
       type: "simple-marker",
       size: 8,
-      color: [104, 108, 110, 0.75],
+      color: [104, 108, 110, 0.5],
       outline: {
         width: 0,
       },
     },
   },
+  minScale: 5000,
 });
 
 const footprintsLayer = new FeatureLayer({
@@ -47,16 +48,13 @@ const workOrdersLayer = new FeatureLayer({
 
 const map = new Map({
   basemap: "satellite",
-  layers: [orientedImageryLayer, footprintsLayer, workOrdersLayer],
+  layers: [footprintsLayer, orientedImageryLayer, workOrdersLayer],
 });
 
 const view = new MapView({
   map: map,
   container: "viewDiv",
   popupEnabled: false,
-  spatialReference: {
-    wkid: 3346,
-  },
 });
 
 view.when(async () => {
