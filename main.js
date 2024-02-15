@@ -1,8 +1,10 @@
 import Graphic from "@arcgis/core/Graphic";
+import Map from "@arcgis/core/Map";
 import PopupTemplate from "@arcgis/core/PopupTemplate";
-import WebMap from "@arcgis/core/WebMap";
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils";
 import Point from "@arcgis/core/geometry/Point";
+import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
+import OrientedImageryLayer from "@arcgis/core/layers/OrientedImageryLayer";
 import CustomContent from "@arcgis/core/popup/content/CustomContent";
 import MapView from "@arcgis/core/views/MapView";
 import Editor from "@arcgis/core/widgets/Editor";
@@ -16,25 +18,61 @@ defineCustomElements(window, {
   resourcesUrl: "https://js.arcgis.com/calcite-components/2.4.0/assets",
 });
 
-let featureLayer;
-
-const map = new WebMap({
-  portalItem: {
-    // autocasts as new PortalItem()
-    id: "518d922fcc8a4b4bbf7586cff6dacbae",
+const orientedImageryLayer = new OrientedImageryLayer({
+  url: "https://servicesdev.arcgis.com/SFghic860y4YxamR/arcgis/rest/services/VilniusCity_360/FeatureServer/0",
+  renderer: {
+    type: "simple",
+    symbol: {
+      type: "simple-marker",
+      size: 8,
+      color: [104, 108, 110, 0.75],
+      outline: {
+        width: 0,
+      },
+    },
   },
 });
+
+const footprintsLayer = new FeatureLayer({
+  url: "https://servicesdev.arcgis.com/SFghic860y4YxamR/arcgis/rest/services/VilniusCity_360/FeatureServer/1",
+});
+
+const workOrdersLayer = new FeatureLayer({
+  outFields: ["*"],
+  title: "Work Orders",
+  portalItem: {
+    id: "da96fabc091f499380073b0b14c523c8",
+  },
+});
+
+const map = new Map({
+  basemap: "satellite",
+  layers: [orientedImageryLayer, footprintsLayer, workOrdersLayer],
+  spatialReference: {
+    wkid: 3346,
+  },
+});
+
 const view = new MapView({
   map: map,
   container: "viewDiv",
   popupEnabled: false,
 });
-map.load().then(async () => {
-  await map.basemap.loadAll();
-  for (const layer of map.basemap.baseLayers) {
-    // layer.effect = "grayscale(75%)";
-    layer.effect = "bloom(50%)";
-  }
+
+view.when(async () => {
+  await orientedImageryLayer.load();
+  await footprintsLayer.load();
+  await workOrdersLayer.load();
+
+  view.goTo(footprintsLayer.fullExtent);
+
+  const workOrdersLayerView = await view.whenLayerView(workOrdersLayer);
+  reactiveUtils.when(
+    () => !workOrdersLayerView.dataUpdating,
+    () => {
+      updateTable(workOrdersLayer);
+    }
+  );
 });
 
 /*************************************
@@ -53,18 +91,18 @@ view.ui.add(expand, "bottom-left");
 
 // OrientedImageryViewer
 const orientedImageryViewer = new OrientedImageryViewer({
-  view,
-  disabled: true,
+  container: "oi-container",
   docked: true,
   dockEnabled: true,
-  container: "oi-container",
+  layer: orientedImageryLayer,
+  view,
 });
 const flow = document.getElementById("workorder-flow");
 
 /*************************************
  Popup setup
 *************************************/
-const contentWidget = new CustomContent({
+const customContent = new CustomContent({
   outFields: ["*"],
   creator: (event) => {
     const viewImageryBtn = document.createElement("calcite-button");
@@ -77,57 +115,33 @@ const contentWidget = new CustomContent({
   },
 });
 
-let textElement = {
+const textElement = {
   type: "text",
   text: 'This work order is to resolve an issue with {Category}.<br><br>Notes: "{details}"',
 };
-const template = new PopupTemplate({
+
+workOrdersLayer.popupTemplate = new PopupTemplate({
   outFields: ["*"],
   title: "Work order",
-  content: [textElement, contentWidget],
+  content: [textElement, customContent],
 });
 
 /*************************************
  Now wire it together
 *************************************/
-view.on("layerview-create", ({ layer, layerView }) => {
-  if (layer.type === "oriented-imagery") {
-    layer.renderer = {
-      type: "simple",
-      symbol: {
-        type: "simple-marker",
-        size: 6,
-        color: [104, 108, 110, 0.5],
-        outline: {
-          width: 0,
-        },
-      },
-    };
-    orientedImageryViewer.layer = layer;
-  } else if (layer.type === "feature" && layer.title === "Work Orders") {
-    featureLayer = layer;
-    featureLayer.outFields = ["*"];
-    featureLayer.popupTemplate = template;
-    reactiveUtils.when(
-      () => !layerView.dataUpdating,
-      () => {
-        updateTable(layer);
-      }
-    );
-  }
-});
+
 //when the user clicks on a feature show a popup, if not, pull up the imagery
 view.on("click", (event) => {
   view
     .hitTest(event, {
-      layer: featureLayer,
+      layer: workOrdersLayer,
     })
     .then((response) => {
-      const results = response.results;
+      const { results } = response;
       if (
         results.length > 0 &&
         results[0].graphic &&
-        results[0].graphic.layer === featureLayer
+        results[0].graphic.layer === workOrdersLayer
       ) {
         view.openPopup({
           location: event.mapPoint,
@@ -138,7 +152,8 @@ view.on("click", (event) => {
       }
     });
 });
-document.getElementById("btnUpdate").onclick = async () => {
+
+document.getElementById("create-work-flow-button").onclick = async () => {
   //start the work order flow
   createWorkOrderFlow();
 };
@@ -240,10 +255,11 @@ async function createWorkOrderFlow() {
       geometry: new Point({
         x: orientedImageryViewer.referencePoint.x,
         y: orientedImageryViewer.referencePoint.y,
-        spatialReference: view.spatialReference,
+        spatialReference: orientedImageryViewer.referencePoint.spatialReference,
       }),
-      sourceLayer: featureLayer,
+      sourceLayer: workOrdersLayer,
     });
+
     await editor.viewModel.startCreateFeaturesWorkflowAtFeatureEdit({
       initialFeature: featureToCreate,
     });
@@ -252,13 +268,15 @@ async function createWorkOrderFlow() {
       cancelWorkflow();
     });
   } else {
-    console.warning("need to select reference point first.");
+    console.warn("need to select reference point first.");
   }
 
   workOrderFlowItem.addEventListener("calciteFlowItemBack", cancelWorkflow);
+
   flow.append(workOrderFlowItem);
 
   function cancelWorkflow() {
+    console.log("cancelWorkflow");
     if (editor) {
       const { activeWorkflow } = editor.viewModel;
       if (activeWorkflow) {
