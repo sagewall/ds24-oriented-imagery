@@ -13,7 +13,7 @@ import { defineCustomElements } from "@esri/calcite-components/dist/loader";
 import "./style.css";
 
 defineCustomElements(window, {
-  resourcesUrl: "https://js.arcgis.com/calcite-components/2.1.0/assets",
+  resourcesUrl: "https://js.arcgis.com/calcite-components/2.4.0/assets",
 });
 
 let featureLayer;
