@@ -19,6 +19,9 @@ defineCustomElements(window, {
   resourcesUrl: "https://js.arcgis.com/calcite-components/2.4.0/assets",
 });
 
+// Create a variable for the Editor widget
+let editor;
+
 // Get a reference to the workorder-flow html element
 const flow = document.querySelector("#workorder-flow");
 
@@ -271,7 +274,7 @@ async function createWorkOrderFlow() {
   notice.append(noticeMessage);
 
   // Create a new Editor widget
-  const editor = new Editor({
+  editor = new Editor({
     view: view,
     container: workOrderFlowItem,
   });
