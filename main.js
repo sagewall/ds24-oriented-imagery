@@ -74,7 +74,7 @@ view.when(async () => {
 });
 
 /*************************************
- Widgets/components
+Widgets/components
 *************************************/
 // LayerList
 const layerList = new LayerList({
@@ -98,7 +98,7 @@ const orientedImageryViewer = new OrientedImageryViewer({
 const flow = document.getElementById("workorder-flow");
 
 /*************************************
- Popup setup
+Popup setup
 *************************************/
 const customContent = new CustomContent({
   outFields: ["*"],
@@ -125,7 +125,7 @@ workOrdersLayer.popupTemplate = new PopupTemplate({
 });
 
 /*************************************
- Now wire it together
+Now wire it together
 *************************************/
 
 //when the user clicks on a feature show a popup, if not, pull up the imagery
@@ -157,7 +157,7 @@ document.getElementById("create-work-flow-button").onclick = async () => {
 };
 
 /*************************************
- Table setup
+Table setup
 *************************************/
 const table = document.querySelector("calcite-table");
 
@@ -221,7 +221,7 @@ async function updateTable(layer) {
 }
 
 /*************************************
- Setup flow
+Setup flow
 *************************************/
 async function createWorkOrderFlow() {
   //Create UI
@@ -278,6 +278,9 @@ async function createWorkOrderFlow() {
           force: true,
         });
       }
+      activeWorkflow?.destroy();
+      orientedImageryViewer.mapImageConversionToolState = false;
+      flow.back();
     }
   }
 }
