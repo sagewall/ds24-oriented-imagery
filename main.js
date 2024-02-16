@@ -71,26 +71,23 @@ const map = new Map({
 
 // Create a MapView
 const view = new MapView({
-  map: map,
+  center: [25.276, 54.703],
   container: "viewDiv",
+  map,
   popupEnabled: false,
+  zoom: 14,
 });
 
 // When the view is ready
 view.when(async () => {
-  // Wait for the layers to load
-  await orientedImageryLayer.load();
-  await footprintsLayer.load();
+  // Wait for the workOrdersLayer to load
   await workOrdersLayer.load();
-
-  // Go to the full extent of the footprints layer
-  view.goTo(footprintsLayer.fullExtent);
 
   // Update the table with the work order data
   updateTable(workOrdersLayer);
 });
 
-// Creat a LayerList widget
+// Create a LayerList widget
 const layerList = new LayerList({
   view: view,
   selectionMode: "single",
