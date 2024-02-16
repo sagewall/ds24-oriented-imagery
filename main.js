@@ -210,20 +210,20 @@ async function updateTable(layer) {
   // Query the features and update the table
   layer.queryFeatures(query).then((results) => {
     results.features.forEach((feature) => {
-      let tableRow = document.createElement("calcite-table-row");
+      const tableRow = document.createElement("calcite-table-row");
       const code = feature.attributes.Category;
       const categoryCodedValue = categoryCodedValues.find((value) => value.code === code);
-      let nameTableCell = document.createElement("calcite-table-cell");
+      const nameTableCell = document.createElement("calcite-table-cell");
       nameTableCell.innerHTML = categoryCodedValue.name;
       tableRow.append(nameTableCell);
 
-      let countTableCell = document.createElement("calcite-table-cell");
+      const countTableCell = document.createElement("calcite-table-cell");
       countTableCell.alignment = "center";
       countTableCell.innerHTML = feature.attributes.count_Category;
       tableRow.append(countTableCell);
 
-      let percentTableCell = document.createElement("calcite-table-cell");
-      let meter = document.createElement("calcite-meter");
+      const percentTableCell = document.createElement("calcite-table-cell");
+      const meter = document.createElement("calcite-meter");
       meter.fillType = "single";
       meter.valueLabel = true;
       meter.label = "percent";
