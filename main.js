@@ -130,6 +130,10 @@ workOrdersLayer.popupTemplate = new PopupTemplate({
 
 //when the user clicks on a feature show a popup, if not, pull up the imagery
 view.on("click", (event) => {
+  if (orientedImageryViewer.mapImageConversionToolState) {
+    return;
+  }
+  event.stopPropagation();
   view
     .hitTest(event, {
       layer: workOrdersLayer,
