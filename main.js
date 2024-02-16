@@ -1,7 +1,6 @@
 import Graphic from "@arcgis/core/Graphic";
 import Map from "@arcgis/core/Map";
 import PopupTemplate from "@arcgis/core/PopupTemplate";
-import * as reactiveUtils from "@arcgis/core/core/reactiveUtils";
 import Point from "@arcgis/core/geometry/Point";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import OrientedImageryLayer from "@arcgis/core/layers/OrientedImageryLayer";
@@ -87,16 +86,8 @@ view.when(async () => {
   // Go to the full extent of the footprints layer
   view.goTo(footprintsLayer.fullExtent);
 
-  // Wait for the work orders layer view to be ready
-  const workOrdersLayerView = await view.whenLayerView(workOrdersLayer);
-
-  // Update the table when the work orders layer is done updating
-  reactiveUtils.when(
-    () => !workOrdersLayerView.dataUpdating,
-    () => {
-      updateTable(workOrdersLayer);
-    },
-  );
+  // Update the table with the work order data
+  updateTable(workOrdersLayer);
 });
 
 // Creat a LayerList widget
@@ -299,6 +290,7 @@ async function createWorkOrderFlow() {
 
     // When the workflow is committed, cancel the workflow
     editor.viewModel.on("workflow-commit", () => {
+      updateTable(workOrdersLayer);
       cancelWorkflow();
     });
   } else {
