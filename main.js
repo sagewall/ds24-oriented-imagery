@@ -262,7 +262,8 @@ async function createWorkOrderFlow() {
       cancelWorkflow();
     });
   } else {
-    console.warn("need to select reference point first.");
+    cancelWorkflow();
+    alert("You need to select reference point first.");
   }
 
   workOrderFlowItem.addEventListener("calciteFlowItemBack", cancelWorkflow);
@@ -277,8 +278,9 @@ async function createWorkOrderFlow() {
         editor.cancelWorkflow({
           force: true,
         });
+        activeWorkflow?.reset();
       }
-      activeWorkflow?.destroy();
+
       orientedImageryViewer.mapImageConversionToolState = false;
       flow.back();
     }
