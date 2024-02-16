@@ -221,6 +221,7 @@ async function updateTable(layer) {
       tableRow.append(nameTableCell);
 
       let countTableCell = document.createElement("calcite-table-cell");
+      countTableCell.alignment = "center";
       countTableCell.innerHTML = feature.attributes.count_Category;
       tableRow.append(countTableCell);
 
