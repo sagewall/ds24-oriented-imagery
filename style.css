@@ -32,7 +32,7 @@ calcite-flow {
   overflow-y: visible;
 }
 
-#table-panel {
+#work-orders-panel {
   --calcite-shell-panel-height: auto;
   --calcite-shell-panel-min-height: auto;
   --calcite-shell-panel-max-height: auto;

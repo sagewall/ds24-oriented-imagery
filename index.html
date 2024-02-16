@@ -39,32 +39,27 @@
           </calcite-flow-item>
         </calcite-flow>
       </calcite-shell-panel>
-      <calcite-shell content-behind style="display: block; position: relative">
-        <div id="viewDiv"></div>
-        <calcite-shell-panel slot="panel-top" layout="horizontal" position="end" display-mode="float" collapsed>
-        </calcite-shell-panel>
-        <calcite-shell-panel
-          slot="panel-bottom"
-          layout="horizontal"
-          position="end"
-          display-mode="float"
-          style="margin-bottom: 1rem"
-        >
-          <calcite-panel heading="Work Orders" collapsible collapsed>
-            <calcite-table caption="Work orders" id="table" page-size="4" layout="fixed">
-              <calcite-action-bar slot="selection-actions" layout="horizontal" expand-disabled>
-                <calcite-action text="Analyze" icon="layer"></calcite-action>
-                <calcite-action text="Copy" icon="copy"></calcite-action>
-              </calcite-action-bar>
-              <calcite-table-row slot="table-header">
-                <calcite-table-header heading="Category"></calcite-table-header>
-                <calcite-table-header heading="Total" alignment="end"></calcite-table-header>
-                <calcite-table-header heading="Percent"></calcite-table-header>
-              </calcite-table-row>
-            </calcite-table>
-          </calcite-panel>
-        </calcite-shell-panel>
-      </calcite-shell>
+      <!-- <calcite-shell content-behind style="display: block; position: relative"> -->
+      <div id="viewDiv"></div>
+
+      <calcite-shell-panel
+        id="work-orders-panel"
+        slot="panel-bottom"
+        layout="horizontal"
+        position="end"
+        display-mode="float"
+      >
+        <calcite-panel heading="Work order summary" collapsible collapsed>
+          <calcite-table caption="Work orders" id="table">
+            <calcite-table-row slot="table-header">
+              <calcite-table-header heading="Category" alignment="center"></calcite-table-header>
+              <calcite-table-header heading="Total" alignment="center"></calcite-table-header>
+              <calcite-table-header heading="Percent" alignment="center"></calcite-table-header>
+            </calcite-table-row>
+          </calcite-table>
+        </calcite-panel>
+      </calcite-shell-panel>
+      <!-- </calcite-shell> -->
     </calcite-shell>
     <script type="module" src="/main.js"></script>
   </body>
