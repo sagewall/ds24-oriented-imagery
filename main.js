@@ -310,7 +310,6 @@ async function createWorkOrderFlow() {
    * A function to cancel the workflow
    */
   function cancelWorkflow() {
-    console.log("cancelWorkflow");
     if (editor) {
       const { activeWorkflow } = editor.viewModel;
       if (activeWorkflow) {
