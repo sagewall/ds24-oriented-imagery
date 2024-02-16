@@ -323,6 +323,7 @@ async function createWorkOrderFlow() {
       }
 
       orientedImageryViewer.mapImageConversionToolState = false;
+      orientedImageryViewer.referencePoint = null;
       flow.back();
     }
   }
