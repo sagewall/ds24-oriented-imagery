@@ -11,6 +11,7 @@ import Expand from "@arcgis/core/widgets/Expand";
 import LayerList from "@arcgis/core/widgets/LayerList";
 import OrientedImageryViewer from "@arcgis/core/widgets/OrientedImageryViewer";
 import { defineCustomElements } from "@esri/calcite-components/dist/loader";
+import { renderer } from "./renderer";
 import "./style.css";
 
 // Define the custom calcite elements
@@ -57,10 +58,9 @@ const footprintsLayer = new FeatureLayer({
 // Create a FeatureLayer for the work orders
 const workOrdersLayer = new FeatureLayer({
   outFields: ["*"],
+  renderer,
   title: "Work Orders",
-  portalItem: {
-    id: "da96fabc091f499380073b0b14c523c8",
-  },
+  url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Work Orders/FeatureServer/0",
 });
 
 // Create a Map
