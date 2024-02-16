@@ -316,7 +316,7 @@ async function createWorkOrderFlow() {
         editor.cancelWorkflow({
           force: true,
         });
-        activeWorkflow?.reset();
+        activeWorkflow?.destroy();
       }
 
       orientedImageryViewer.mapImageConversionToolState = false;
