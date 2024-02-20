@@ -60,7 +60,7 @@ const workOrdersLayer = new FeatureLayer({
   outFields: ["*"],
   renderer,
   title: "Work Orders",
-  url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Work Orders/FeatureServer/0",
+  url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Work%20Orders/FeatureServer/0",
 });
 
 // Create a Map
