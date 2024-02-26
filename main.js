@@ -7,8 +7,6 @@ import OrientedImageryLayer from "@arcgis/core/layers/OrientedImageryLayer";
 import CustomContent from "@arcgis/core/popup/content/CustomContent";
 import MapView from "@arcgis/core/views/MapView";
 import Editor from "@arcgis/core/widgets/Editor";
-import Expand from "@arcgis/core/widgets/Expand";
-import LayerList from "@arcgis/core/widgets/LayerList";
 import OrientedImageryViewer from "@arcgis/core/widgets/OrientedImageryViewer";
 import { defineCustomElements } from "@esri/calcite-components/dist/loader";
 import { renderer } from "./renderer";
@@ -33,6 +31,7 @@ document.querySelector("#create-work-flow-button").onclick = async () => {
 // Get a reference to the calcite-table
 const table = document.querySelector("calcite-table");
 
+// Step 1: Create the OrientedImageryLayer
 // Create an OrientedImageryLayer
 const orientedImageryLayer = new OrientedImageryLayer({
   url: "https://servicesdev.arcgis.com/SFghic860y4YxamR/arcgis/rest/services/VilniusCity_360/FeatureServer/0",
@@ -50,23 +49,18 @@ const orientedImageryLayer = new OrientedImageryLayer({
   minScale: 5000,
 });
 
+// Step 2: Create the FeatureLayer for the footprints
 // Create a FeatureLayer for the footprints
 const footprintsLayer = new FeatureLayer({
   url: "https://servicesdev.arcgis.com/SFghic860y4YxamR/arcgis/rest/services/VilniusCity_360/FeatureServer/1",
 });
 
-// Create a FeatureLayer for the work orders
-const workOrdersLayer = new FeatureLayer({
-  outFields: ["*"],
-  renderer,
-  title: "Work Orders",
-  url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Work%20Orders/FeatureServer/0",
-});
-
+// Step 3: Create the Map and MapView
+// Create a Map
 // Create a Map
 const map = new Map({
   basemap: "satellite",
-  layers: [footprintsLayer, orientedImageryLayer, workOrdersLayer],
+  layers: [footprintsLayer, orientedImageryLayer],
 });
 
 // Create a MapView
@@ -78,31 +72,8 @@ const view = new MapView({
   zoom: 14,
 });
 
-// When the view is ready
-view.when(async () => {
-  // Wait for the workOrdersLayer to load
-  await workOrdersLayer.load();
-
-  // Update the table with the work order data
-  updateTable(workOrdersLayer);
-});
-
-// Create a LayerList widget
-const layerList = new LayerList({
-  view: view,
-  selectionMode: "single",
-});
-
-// Add the LayerList widget to an Expand widget
-const expand = new Expand({
-  view: view,
-  content: layerList,
-});
-
-// Add the Expand widget to the view
-view.ui.add(expand, "top-right");
-
-// Creat an OrientedImageryViewer widget
+// Step 4: Create the OrientedImageryViewer
+// Create an OrientedImageryViewer widget
 const orientedImageryViewer = new OrientedImageryViewer({
   container: "oi-container",
   docked: true,
@@ -111,6 +82,17 @@ const orientedImageryViewer = new OrientedImageryViewer({
   view,
 });
 
+// Step 5: Create the FeatureLayer for the work orders
+// Create a FeatureLayer for the work orders
+const workOrdersLayer = new FeatureLayer({
+  outFields: ["*"],
+  renderer,
+  title: "Work Orders",
+  url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Work%20Orders/FeatureServer/0",
+});
+map.add(workOrdersLayer);
+
+// Step 6: Create the PopupTemplate for the work orders
 // Custom content for the work orders popup template
 const customContent = new CustomContent({
   outFields: ["*"],
@@ -138,6 +120,7 @@ workOrdersLayer.popupTemplate = new PopupTemplate({
   content: [textElement, customContent],
 });
 
+// Step 7: Set up the click event for the view
 // Set up the click event for the view
 view.on("click", (event) => {
   // If the map image conversion tool is active, don't do anything
@@ -168,6 +151,15 @@ view.on("click", (event) => {
         orientedImageryViewer.loadBestImage(event.mapPoint);
       }
     });
+});
+
+// When the view is ready
+view.when(async () => {
+  // Wait for the workOrdersLayer to load
+  await workOrdersLayer.load();
+
+  // Update the table with the work order data
+  updateTable(workOrdersLayer);
 });
 
 /**

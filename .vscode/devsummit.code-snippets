@@ -1,0 +1,151 @@
+{
+  "Create OrientedImageryLayer": {
+    "prefix": "step-1-orientedImageryLayer",
+    "body": [
+      "// Create an OrientedImageryLayer",
+      "const orientedImageryLayer = new OrientedImageryLayer({",
+      "  url: \"https://servicesdev.arcgis.com/SFghic860y4YxamR/arcgis/rest/services/VilniusCity_360/FeatureServer/0\",",
+      "  renderer: {",
+      "    type: \"simple\",",
+      "    symbol: {",
+      "      type: \"simple-marker\",",
+      "      size: 8,",
+      "      color: [104, 108, 110, 0.5],",
+      "      outline: {",
+      "        width: 0,",
+      "      },",
+      "    },",
+      "  },",
+      "  minScale: 5000,",
+      "});"
+    ],
+    "description": "Code snippet to create an OrientedImageryLayer"
+  },
+  "Create FeatureLayer": {
+    "prefix": "step-2-footprintsLayer",
+    "body": [
+      "// Create a FeatureLayer for the footprints",
+      "const footprintsLayer = new FeatureLayer({",
+      "  url: \"https://servicesdev.arcgis.com/SFghic860y4YxamR/arcgis/rest/services/VilniusCity_360/FeatureServer/1\",",
+      "});"
+    ],
+    "description": "Code snippet to create a FeatureLayer"
+  },
+  "Create Map and MapView": {
+    "prefix": "step-3-mapAndView",
+    "body": [
+      "// Create a Map",
+      "const map = new Map({",
+      "  basemap: \"satellite\",",
+      "  layers: [footprintsLayer, orientedImageryLayer],",
+      "});",
+      "",
+      "// Create a MapView",
+      "const view = new MapView({",
+      "  center: [25.276, 54.703],",
+      "  container: \"viewDiv\",",
+      "  map,",
+      "  popupEnabled: false,",
+      "  zoom: 14,",
+      "});"
+    ],
+    "description": "Code snippet to create a Map and a MapView"
+  },
+  "Create OrientedImageryViewer Widget": {
+    "prefix": "step-4-orientedImageryViewer",
+    "body": [
+      "// Create an OrientedImageryViewer widget",
+      "const orientedImageryViewer = new OrientedImageryViewer({",
+      "  container: \"oi-container\",",
+      "  docked: true,",
+      "  dockEnabled: true,",
+      "  layer: orientedImageryLayer,",
+      "  view,",
+      "});"
+    ],
+    "description": "Code snippet to create an OrientedImageryViewer widget"
+  },
+  "Create WorkOrders FeatureLayer": {
+    "prefix": "step-5-workOrdersLayer",
+    "body": [
+      "// Create a FeatureLayer for the work orders",
+      "const workOrdersLayer = new FeatureLayer({",
+      "  outFields: [\"*\"],",
+      "  renderer,",
+      "  title: \"Work Orders\",",
+      "  url: \"https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Work%20Orders/FeatureServer/0\",",
+      "});",
+      "map.add(workOrdersLayer);"
+    ],
+    "description": "Code snippet to create a WorkOrders FeatureLayer and add it to the map"
+  },
+  "Create WorkOrders PopupTemplate": {
+    "prefix": "step-6-workOrdersPopup",
+    "body": [
+      "// Custom content for the work orders popup template",
+      "const customContent = new CustomContent({",
+      "  outFields: [\"*\"],",
+      "  creator: (event) => {",
+      "    const viewImageryBtn = document.createElement(\"calcite-button\");",
+      "    viewImageryBtn.setAttribute(\"appearance\", \"outline\");",
+      "    viewImageryBtn.innerText = \"view available imagery\";",
+      "    viewImageryBtn.onclick = () => {",
+      "      orientedImageryViewer?.loadBestImage(event.graphic.geometry);",
+      "    };",
+      "    return viewImageryBtn;",
+      "  },",
+      "});",
+      "",
+      "// Text element for the work orders popup template",
+      "const textElement = {",
+      "  type: \"text\",",
+      "  text: 'This work order is to resolve an issue with {Category}.<br><br>Notes: \"{details}\"',",
+      "};",
+      "",
+      "// Define the popup template for the work orders layer",
+      "workOrdersLayer.popupTemplate = new PopupTemplate({",
+      "  outFields: [\"*\"],",
+      "  title: \"Work order\",",
+      "  content: [textElement, customContent],",
+      "});"
+    ],
+    "description": "Code snippet to create a PopupTemplate for the WorkOrders layer"
+  },
+  "Set Up View Click Event": {
+    "prefix": "step-7-viewClickEvent",
+    "body": [
+      "// Set up the click event for the view",
+      "view.on(\"click\", (event) => {",
+      "  // If the map image conversion tool is active, don't do anything",
+      "  if (orientedImageryViewer.mapImageConversionToolState) {",
+      "    return;",
+      "  }",
+      "",
+      "  // Stop the event from propagating",
+      "  event.stopPropagation();",
+      "",
+      "  // Hit test the work orders layer",
+      "  view",
+      "    .hitTest(event, {",
+      "      layer: workOrdersLayer,",
+      "    })",
+      "    .then((response) => {",
+      "      // Get the results from the hit test response",
+      "      const { results } = response;",
+      "",
+      "      // If there is a graphic from the work orders layer in the results, open the popup",
+      "      // Otherwise, load the best image from the oriented imagery layer",
+      "      if (results.length > 0 && results[0].graphic && results[0].graphic.layer === workOrdersLayer) {",
+      "        view.openPopup({",
+      "          location: event.mapPoint,",
+      "          features: [results[0].graphic],",
+      "        });",
+      "      } else {",
+      "        orientedImageryViewer.loadBestImage(event.mapPoint);",
+      "      }",
+      "    });",
+      "});"
+    ],
+    "description": "Code snippet to set up a click event for the view"
+  }
+}
