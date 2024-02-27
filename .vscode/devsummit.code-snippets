@@ -1,6 +1,6 @@
 {
   "Create OrientedImageryLayer": {
-    "prefix": "step-1-orientedImageryLayer",
+    "prefix": "step-01-orientedImageryLayer",
     "body": [
       "// Create an OrientedImageryLayer",
       "const orientedImageryLayer = new OrientedImageryLayer({",
@@ -22,7 +22,7 @@
     "description": "Code snippet to create an OrientedImageryLayer"
   },
   "Create FeatureLayer": {
-    "prefix": "step-2-footprintsLayer",
+    "prefix": "step-02-footprintsLayer",
     "body": [
       "// Create a FeatureLayer for the footprints",
       "const footprintsLayer = new FeatureLayer({",
@@ -32,7 +32,7 @@
     "description": "Code snippet to create a FeatureLayer"
   },
   "Create Map and MapView": {
-    "prefix": "step-3-mapAndView",
+    "prefix": "step-03-mapAndView",
     "body": [
       "// Create a Map",
       "const map = new Map({",
@@ -52,7 +52,7 @@
     "description": "Code snippet to create a Map and a MapView"
   },
   "Create OrientedImageryViewer Widget": {
-    "prefix": "step-4-orientedImageryViewer",
+    "prefix": "step-04-orientedImageryViewer",
     "body": [
       "// Create an OrientedImageryViewer widget",
       "const orientedImageryViewer = new OrientedImageryViewer({",
@@ -66,7 +66,7 @@
     "description": "Code snippet to create an OrientedImageryViewer widget"
   },
   "Create WorkOrders FeatureLayer": {
-    "prefix": "step-5-workOrdersLayer",
+    "prefix": "step-05-workOrdersLayer",
     "body": [
       "// Create a FeatureLayer for the work orders",
       "const workOrdersLayer = new FeatureLayer({",
@@ -80,7 +80,7 @@
     "description": "Code snippet to create a WorkOrders FeatureLayer and add it to the map"
   },
   "Create WorkOrders PopupTemplate": {
-    "prefix": "step-6-workOrdersPopup",
+    "prefix": "step-06-workOrdersPopup",
     "body": [
       "// Custom content for the work orders popup template",
       "const customContent = new CustomContent({",
@@ -112,7 +112,7 @@
     "description": "Code snippet to create a PopupTemplate for the WorkOrders layer"
   },
   "Set Up View Click Event": {
-    "prefix": "step-7-viewClickEvent",
+    "prefix": "step-07-viewClickEvent",
     "body": [
       "// Set up the click event for the view",
       "view.on(\"click\", (event) => {",
@@ -147,5 +147,75 @@
       "});"
     ],
     "description": "Code snippet to set up a click event for the view"
+  },
+  "Create Workflow Item and Notice": {
+    "prefix": "step-08-workflowItemNotice",
+    "body": [
+      "// Create the workflow item",
+      "const workOrderFlowItem = document.createElement(\"calcite-flow-item\");",
+      "workOrderFlowItem.heading = \"Create work order\";",
+      "workOrderFlowItem.description = \"Please fill out this form\";",
+      "workOrderFlowItem.addEventListener(\"calciteFlowItemBack\", cancelWorkflow);",
+      "",
+      "// Create the notice",
+      "const notice = document.createElement(\"calcite-notice\");",
+      "notice.open = true;",
+      "notice.width = \"full\";",
+      "workOrderFlowItem.append(notice);",
+      "",
+      "// Create the notice message",
+      "const noticeMessage = document.createElement(\"span\");",
+      "noticeMessage.slot = \"message\";",
+      "noticeMessage.innerText = \"What is the problem?\";",
+      "notice.append(noticeMessage);"
+      "",
+      "// Append the workflow item to the work order flow",
+      "flow.append(workOrderFlowItem);"
+    ],
+    "description": "Code snippet to create a workflow item and a notice"
+  },
+  "Create Editor Widget": {
+    "prefix": "step-09-editorWidget",
+    "body": [
+      "// Create a new Editor widget",
+      "editor = new Editor({",
+      "  view: view,",
+      "  container: workOrderFlowItem,",
+      "});"
+    ],
+    "description": "Code snippet to create a new Editor widget"
+  },
+  "Start the create features workflow": {
+    "prefix": "step-10-startCreateFeaturesWorkflow",
+    "body": [
+      "// If the oriented imagery viewer has a reference point add a new feature to the work orders layer",
+      "// If not, alert the user and cancel the workflow",
+      "if (orientedImageryViewer.referencePoint) {",
+      "  // Create a new Graphic from the reference point",
+      "  const graphic = new Graphic({",
+      "    geometry: new Point({",
+      "      x: orientedImageryViewer.referencePoint.x,",
+      "      y: orientedImageryViewer.referencePoint.y,",
+      "      spatialReference: orientedImageryViewer.referencePoint.spatialReference,",
+      "    }),",
+      "    sourceLayer: workOrdersLayer,",
+      "  });",
+      "",
+      "  // Start the create features workflow with the graphic",
+      "  await editor.viewModel.startCreateFeaturesWorkflowAtFeatureEdit({",
+      "    initialFeature: graphic,",
+      "  });",
+      "",
+      "  // When the workflow is committed, cancel the workflow",
+      "  editor.viewModel.on(\"workflow-commit\", () => {",
+      "    updateTable(workOrdersLayer);",
+      "    cancelWorkflow();",
+      "  });",
+      "} else {",
+      "  cancelWorkflow();",
+      "  alert(\"You need to select reference point first.\");",
+      "}"
+    ],
+    "description": "Code snippet to handle the reference point in the oriented imagery viewer"
   }
 }

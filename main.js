@@ -57,7 +57,6 @@ const footprintsLayer = new FeatureLayer({
 
 // Step 3: Create the Map and MapView
 // Create a Map
-// Create a Map
 const map = new Map({
   basemap: "satellite",
   layers: [footprintsLayer, orientedImageryLayer],
@@ -163,6 +162,92 @@ view.when(async () => {
 });
 
 /**
+ * A function to create the work order flow
+ */
+async function createWorkOrderFlow() {
+  // Step 8: Create the calcite-flow-item for the work order
+  // Create the workflow item
+  const workOrderFlowItem = document.createElement("calcite-flow-item");
+  workOrderFlowItem.heading = "Create work order";
+  workOrderFlowItem.description = "Please fill out this form";
+  workOrderFlowItem.addEventListener("calciteFlowItemBack", cancelWorkflow);
+
+  // Create the notice
+  const notice = document.createElement("calcite-notice");
+  notice.open = true;
+  notice.width = "full";
+  workOrderFlowItem.append(notice);
+
+  // Create the notice message
+  const noticeMessage = document.createElement("span");
+  noticeMessage.slot = "message";
+  noticeMessage.innerText = "What is the problem?";
+  notice.append(noticeMessage);
+
+  // Append the workflow item to the work order flow
+  flow.append(workOrderFlowItem);
+
+  // Step 9: Create the Editor widget
+  // Create a new Editor widget
+  editor = new Editor({
+    view: view,
+    container: workOrderFlowItem,
+  });
+
+  // :: Warning ::
+  // Some of the code below is not part of the stable public API and may change in future releases.
+  // It is provided to demonstrate where the API is headed and to allow for feedback.
+
+  // Step 10: Start the create features workflow
+  // If the oriented imagery viewer has a reference point add a new feature to the work orders layer
+  // If not, alert the user and cancel the workflow
+  if (orientedImageryViewer.referencePoint) {
+    // Create a new Graphic from the reference point
+    const graphic = new Graphic({
+      geometry: new Point({
+        x: orientedImageryViewer.referencePoint.x,
+        y: orientedImageryViewer.referencePoint.y,
+        spatialReference: orientedImageryViewer.referencePoint.spatialReference,
+      }),
+      sourceLayer: workOrdersLayer,
+    });
+
+    // Start the create features workflow with the graphic
+    await editor.viewModel.startCreateFeaturesWorkflowAtFeatureEdit({
+      initialFeature: graphic,
+    });
+
+    // When the workflow is committed, cancel the workflow
+    editor.viewModel.on("workflow-commit", () => {
+      updateTable(workOrdersLayer);
+      cancelWorkflow();
+    });
+  } else {
+    cancelWorkflow();
+    alert("You need to select reference point first.");
+  }
+
+  /**
+   * A function to cancel the workflow
+   */
+  function cancelWorkflow() {
+    if (editor) {
+      const { activeWorkflow } = editor.viewModel;
+      if (activeWorkflow) {
+        editor.cancelWorkflow({
+          force: true,
+        });
+        activeWorkflow?.destroy();
+      }
+
+      orientedImageryViewer.mapImageConversionToolState = false;
+      orientedImageryViewer.referencePoint = null;
+      flow.back();
+    }
+  }
+}
+
+/**
  * A function to update the table with the work order data
  *
  * @param {FeatureLayer} layer
@@ -230,83 +315,4 @@ async function updateTable(layer) {
       table.append(tableRow);
     });
   });
-}
-
-/**
- * A function to create the work order flow
- */
-async function createWorkOrderFlow() {
-  // Create the workflow item
-  const workOrderFlowItem = document.createElement("calcite-flow-item");
-  workOrderFlowItem.heading = "Create work order";
-  workOrderFlowItem.description = "Please fill out this form";
-  workOrderFlowItem.addEventListener("calciteFlowItemBack", cancelWorkflow);
-
-  // Create the notice
-  const notice = document.createElement("calcite-notice");
-  notice.open = true;
-  notice.width = "full";
-  workOrderFlowItem.append(notice);
-
-  // Create the notice message
-  const noticeMessage = document.createElement("span");
-  noticeMessage.slot = "message";
-  noticeMessage.innerText = "What is the problem?";
-  notice.append(noticeMessage);
-
-  // Create a new Editor widget
-  editor = new Editor({
-    view: view,
-    container: workOrderFlowItem,
-  });
-
-  // If the oriented imagery viewer has a reference point add a new feature to the work orders layer
-  // If not, alert the user and cancel the workflow
-  if (orientedImageryViewer.referencePoint) {
-    // Create a new Graphic from the reference point
-    const graphic = new Graphic({
-      geometry: new Point({
-        x: orientedImageryViewer.referencePoint.x,
-        y: orientedImageryViewer.referencePoint.y,
-        spatialReference: orientedImageryViewer.referencePoint.spatialReference,
-      }),
-      sourceLayer: workOrdersLayer,
-    });
-
-    // Start the create features workflow with the graphic
-    await editor.viewModel.startCreateFeaturesWorkflowAtFeatureEdit({
-      initialFeature: graphic,
-    });
-
-    // When the workflow is committed, cancel the workflow
-    editor.viewModel.on("workflow-commit", () => {
-      updateTable(workOrdersLayer);
-      cancelWorkflow();
-    });
-  } else {
-    cancelWorkflow();
-    alert("You need to select reference point first.");
-  }
-
-  // Append the workflow item to the work order flow
-  flow.append(workOrderFlowItem);
-
-  /**
-   * A function to cancel the workflow
-   */
-  function cancelWorkflow() {
-    if (editor) {
-      const { activeWorkflow } = editor.viewModel;
-      if (activeWorkflow) {
-        editor.cancelWorkflow({
-          force: true,
-        });
-        activeWorkflow?.destroy();
-      }
-
-      orientedImageryViewer.mapImageConversionToolState = false;
-      orientedImageryViewer.referencePoint = null;
-      flow.back();
-    }
-  }
 }
