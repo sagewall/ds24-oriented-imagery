@@ -1,15 +1,11 @@
 import Graphic from "@arcgis/core/Graphic";
-import Map from "@arcgis/core/Map";
-import PopupTemplate from "@arcgis/core/PopupTemplate";
-import Point from "@arcgis/core/geometry/Point";
-import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
-import OrientedImageryLayer from "@arcgis/core/layers/OrientedImageryLayer";
+import WebMap from "@arcgis/core/WebMap";
 import CustomContent from "@arcgis/core/popup/content/CustomContent";
 import MapView from "@arcgis/core/views/MapView";
 import Editor from "@arcgis/core/widgets/Editor";
 import OrientedImageryViewer from "@arcgis/core/widgets/OrientedImageryViewer";
+import Popup from "@arcgis/core/widgets/Popup";
 import { defineCustomElements } from "@esri/calcite-components/dist/loader";
-import { renderer } from "./renderer";
 import "./style.css";
 
 // Define the custom calcite elements
@@ -23,139 +19,108 @@ let editor;
 // Get a reference to the workorder-flow html element
 const flow = document.querySelector("#workorder-flow");
 
-// When the create-work-flow-button is clicked, start the work order flow
-document.querySelector("#create-work-flow-button").onclick = async () => {
-  createWorkOrderFlow();
-};
-
 // Get a reference to the calcite-table
 const table = document.querySelector("calcite-table");
 
-// Step 1: Create the OrientedImageryLayer
-// Create an OrientedImageryLayer
-const orientedImageryLayer = new OrientedImageryLayer({
-  url: "https://servicesdev.arcgis.com/SFghic860y4YxamR/arcgis/rest/services/VilniusCity_360/FeatureServer/0",
-  renderer: {
-    type: "simple",
-    symbol: {
-      type: "simple-marker",
-      size: 8,
-      color: [104, 108, 110, 0.5],
-      outline: {
-        width: 0,
-      },
+// Step 1: Create a web map
+// Create a WebMap
+const map = new WebMap({
+  portalItem: {
+    id: "6228c2ae0a0044089b64709946a18b60",
+    portal: {
+      url: "https://devext.arcgis.com/",
     },
   },
-  minScale: 5000,
 });
 
-// Step 2: Create the FeatureLayer for the footprints
-// Create a FeatureLayer for the footprints
-const footprintsLayer = new FeatureLayer({
-  url: "https://servicesdev.arcgis.com/SFghic860y4YxamR/arcgis/rest/services/VilniusCity_360/FeatureServer/1",
-});
-
-// Step 3: Create the Map and MapView
-// Create a Map
-const map = new Map({
-  basemap: "satellite",
-  layers: [footprintsLayer, orientedImageryLayer],
-});
-
+// Step 2: Create a MapView
 // Create a MapView
 const view = new MapView({
-  center: [25.276, 54.703],
   container: "viewDiv",
   map,
   popupEnabled: false,
-  zoom: 14,
 });
 
-// Step 4: Create the OrientedImageryViewer
-// Create an OrientedImageryViewer widget
-const orientedImageryViewer = new OrientedImageryViewer({
-  container: "oi-container",
-  docked: true,
-  dockEnabled: true,
-  layer: orientedImageryLayer,
-  view,
-});
-
-// Step 5: Create the FeatureLayer for the work orders
-// Create a FeatureLayer for the work orders
-const workOrdersLayer = new FeatureLayer({
-  outFields: ["*"],
-  renderer,
-  title: "Work Orders",
-  url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Work%20Orders/FeatureServer/0",
-});
-map.add(workOrdersLayer);
-
-// Step 6: Create the PopupTemplate for the work orders
-// Custom content for the work orders popup template
-const customContent = new CustomContent({
-  outFields: ["*"],
-  creator: (event) => {
-    const viewImageryBtn = document.createElement("calcite-button");
-    viewImageryBtn.setAttribute("appearance", "outline");
-    viewImageryBtn.innerText = "view available imagery";
-    viewImageryBtn.onclick = () => {
-      orientedImageryViewer?.loadBestImage(event.graphic.geometry);
-    };
-    return viewImageryBtn;
-  },
-});
-
-// Text element for the work orders popup template
-const textElement = {
-  type: "text",
-  text: 'This work order is to resolve an issue with {Category}.<br><br>Notes: "{details}"',
-};
-
-// Define the popup template for the work orders layer
-workOrdersLayer.popupTemplate = new PopupTemplate({
-  outFields: ["*"],
-  title: "Work order",
-  content: [textElement, customContent],
-});
-
-// Step 7: Set up the click event for the view
-// Set up the click event for the view
-view.on("click", (event) => {
-  // If the map image conversion tool is active, don't do anything
-  if (orientedImageryViewer.mapImageConversionToolState) {
-    return;
-  }
-
-  // Stop the event from propagating
-  event.stopPropagation();
-
-  // Hit test the work orders layer
-  view
-    .hitTest(event, {
-      layer: workOrdersLayer,
-    })
-    .then((response) => {
-      // Get the results from the hit test response
-      const { results } = response;
-
-      // If there is a graphic from the work orders layer in the results, open the popup
-      // Otherwise, load the best image from the oriented imagery layer
-      if (results.length > 0 && results[0].graphic && results[0].graphic.layer === workOrdersLayer) {
-        view.openPopup({
-          location: event.mapPoint,
-          features: [results[0].graphic],
-        });
-      } else {
-        orientedImageryViewer.loadBestImage(event.mapPoint);
-      }
-    });
-});
-
-// When the view is ready
+// Wait for the view to load
 view.when(async () => {
-  // Wait for the workOrdersLayer to load
-  await workOrdersLayer.load();
+  // Step 3: Get references to the layers in the web map
+  // Wait for all layers to load
+  await Promise.all(map.allLayers.map((layer) => layer.load()));
+
+  // Find the need layers in the maps allLayers collection
+  const buildingLayer = view.map.allLayers.find((layer) => layer.id === "18dcc2ebf74-layer-9");
+  const orientedImageryLayer = view.map.allLayers.find((layer) => layer.id === "18dc733a9b3-layer-4");
+  const workOrdersLayer = view.map.allLayers.find((layer) => layer.id === "18dcc2ebf75-layer-10");
+
+  // Step 4: Create the OrientedImageryViewer
+  // Create an OrientedImageryViewer widget
+  const orientedImageryViewer = new OrientedImageryViewer({
+    container: "oi-container",
+    docked: true,
+    dockEnabled: true,
+    layer: orientedImageryLayer,
+    view,
+  });
+
+  // Step 5: Add a load best image button to the work orders popup
+  const customContent = new CustomContent({
+    outFields: ["*"],
+    creator: (event) => {
+      const viewImageryBtn = document.createElement("calcite-button");
+      viewImageryBtn.setAttribute("appearance", "outline");
+      viewImageryBtn.innerText = "view available imagery";
+      viewImageryBtn.onclick = () => {
+        orientedImageryViewer?.loadBestImage(event.graphic.geometry);
+      };
+      return viewImageryBtn;
+    },
+  });
+  workOrdersLayer.popupTemplate.content.push(customContent);
+
+  // Step 6: Set up the click event for the view
+  // Set up the click event for the view
+  view.on("click", (event) => {
+    // If the map image conversion tool is active, don't do anything
+    if (orientedImageryViewer.mapImageConversionToolState) {
+      return;
+    }
+
+    // Stop the event from propagating
+    event.stopPropagation();
+
+    // Hit test the work orders layer
+    view
+      .hitTest(event, {
+        layer: workOrdersLayer,
+      })
+      .then((response) => {
+        // Get the results from the hit test response
+        const { results } = response;
+
+        // If there is a graphic from the work orders layer in the results, open the popup
+        // Otherwise, load the best image from the oriented imagery layer
+        if (results[0]?.graphic?.layer === workOrdersLayer || results[0]?.graphic?.layer === buildingLayer) {
+          const popup = new Popup({
+            dockEnabled: true,
+            dockOptions: {
+              breakpoint: false,
+            },
+          });
+          view.popup = popup;
+          popup.open({
+            location: event.mapPoint,
+            features: [results[0].graphic],
+          });
+        } else {
+          orientedImageryViewer.loadBestImage(event.mapPoint);
+        }
+      });
+  });
+
+  // When the create-work-flow-button is clicked, start the work order flow
+  document.querySelector("#create-work-flow-button").onclick = async () => {
+    createWorkOrderFlow(orientedImageryViewer, workOrdersLayer);
+  };
 
   // Update the table with the work order data
   updateTable(workOrdersLayer);
@@ -164,8 +129,7 @@ view.when(async () => {
 /**
  * A function to create the work order flow
  */
-async function createWorkOrderFlow() {
-  // Step 8: Create the calcite-flow-item for the work order
+async function createWorkOrderFlow(orientedImageryViewer, workOrdersLayer) {
   // Create the workflow item
   const workOrderFlowItem = document.createElement("calcite-flow-item");
   workOrderFlowItem.heading = "Create work order";
@@ -187,28 +151,20 @@ async function createWorkOrderFlow() {
   // Append the workflow item to the work order flow
   flow.append(workOrderFlowItem);
 
-  // Step 9: Create the Editor widget
+  // Step 7: Create the Editor widget
   // Create a new Editor widget
   editor = new Editor({
     view: view,
     container: workOrderFlowItem,
   });
 
-  // :: Warning ::
-  // Some of the code below is not part of the stable public API and may change in future releases.
-  // It is provided to demonstrate where the API is headed and to allow for feedback.
-
-  // Step 10: Start the create features workflow
+  // Step 8: Start the create features workflow
   // If the oriented imagery viewer has a reference point add a new feature to the work orders layer
   // If not, alert the user and cancel the workflow
   if (orientedImageryViewer.referencePoint) {
     // Create a new Graphic from the reference point
     const graphic = new Graphic({
-      geometry: new Point({
-        x: orientedImageryViewer.referencePoint.x,
-        y: orientedImageryViewer.referencePoint.y,
-        spatialReference: orientedImageryViewer.referencePoint.spatialReference,
-      }),
+      geometry: orientedImageryViewer.referencePoint,
       sourceLayer: workOrdersLayer,
     });
 
@@ -249,8 +205,6 @@ async function createWorkOrderFlow() {
 
 /**
  * A function to update the table with the work order data
- *
- * @param {FeatureLayer} layer
  */
 async function updateTable(layer) {
   // Query the feature count
