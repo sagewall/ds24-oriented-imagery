@@ -26,10 +26,11 @@ const table = document.querySelector("calcite-table");
 // Create a WebMap
 const map = new WebMap({
   portalItem: {
-    id: "6228c2ae0a0044089b64709946a18b60",
-    portal: {
-      url: "https://devext.arcgis.com/",
-    },
+    id: "076252b0fce8469ea45558f6b7b928ca",
+    // id: "6228c2ae0a0044089b64709946a18b60",
+    // portal: {
+    //   url: "https://devext.arcgis.com/",
+    // },
   },
 });
 
@@ -48,9 +49,13 @@ view.when(async () => {
   await Promise.all(map.allLayers.map((layer) => layer.load()));
 
   // Find the need layers in the maps allLayers collection
-  const buildingLayer = view.map.allLayers.find((layer) => layer.id === "18dcc2ebf74-layer-9");
-  const orientedImageryLayer = view.map.allLayers.find((layer) => layer.id === "18dc733a9b3-layer-4");
-  const workOrdersLayer = view.map.allLayers.find((layer) => layer.id === "18dcc2ebf75-layer-10");
+  // const buildingLayer = view.map.allLayers.find((layer) => layer.id === "18dcc2ebf74-layer-9");
+  // const orientedImageryLayer = view.map.allLayers.find((layer) => layer.id === "18dc733a9b3-layer-4");
+  // const workOrdersLayer = view.map.allLayers.find((layer) => layer.id === "18dcc2ebf75-layer-10");
+
+  const buildingLayer = view.map.allLayers.find((layer) => layer.id === "b5435bf9aa674c4f97dab633ce50ff65");
+  const orientedImageryLayer = view.map.allLayers.find((layer) => layer.id === "18df554895b-layer-5");
+  const workOrdersLayer = view.map.allLayers.find((layer) => layer.id === "5a5382f83c48491c888184bd664cb5d8");
 
   // Step 4: Create the OrientedImageryViewer
   // Create an OrientedImageryViewer widget
@@ -165,7 +170,7 @@ async function createWorkOrderFlow(orientedImageryViewer, workOrdersLayer) {
     // Create a new Graphic from the reference point
     const graphic = new Graphic({
       geometry: orientedImageryViewer.referencePoint,
-      sourceLayer: workOrdersLayer,
+      layer: workOrdersLayer,
     });
 
     // Start the create features workflow with the graphic
