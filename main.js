@@ -40,10 +40,10 @@ const view = new MapView({
 
 // Wait for the view to load
 view.when(async () => {
-  // Step 3: Get references to the layers in the web map
-  // Wait for all layers to load
-  await Promise.all(map.allLayers.map((layer) => layer.load()));
+  // Wait for all the map layers to load
+  await view.map.loadAll();
 
+  // Step 3: Get references to the layers in the web map
   const buildingLayer = view.map.findLayerById("b5435bf9aa674c4f97dab633ce50ff65");
   const orientedImageryLayer = view.map.findLayerById("18df554895b-layer-5");
   const workOrdersLayer = view.map.findLayerById("5a5382f83c48491c888184bd664cb5d8");
