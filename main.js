@@ -172,6 +172,7 @@ async function createWorkOrderFlow(orientedImageryViewer, workOrdersLayer) {
   if (orientedImageryViewer.referencePoint) {
     // Create a new Graphic from the reference point
     const graphic = new Graphic({
+      attributes: {},
       geometry: orientedImageryViewer.referencePoint,
       layer: workOrdersLayer,
     });
