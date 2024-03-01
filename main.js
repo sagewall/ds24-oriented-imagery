@@ -7,6 +7,7 @@ import OrientedImageryViewer from "@arcgis/core/widgets/OrientedImageryViewer";
 import Popup from "@arcgis/core/widgets/Popup";
 import { defineCustomElements } from "@esri/calcite-components/dist/loader";
 import "./style.css";
+import { renderer } from "./renderer.js";
 
 // Define the custom calcite elements
 defineCustomElements(window, {
@@ -56,6 +57,8 @@ view.when(async () => {
   const buildingLayer = view.map.allLayers.find((layer) => layer.id === "b5435bf9aa674c4f97dab633ce50ff65");
   const orientedImageryLayer = view.map.allLayers.find((layer) => layer.id === "18df554895b-layer-5");
   const workOrdersLayer = view.map.allLayers.find((layer) => layer.id === "5a5382f83c48491c888184bd664cb5d8");
+
+  workOrdersLayer.renderer = renderer;
 
   // Step 4: Create the OrientedImageryViewer
   // Create an OrientedImageryViewer widget
