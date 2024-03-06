@@ -22,7 +22,7 @@ const flow = document.querySelector("#workorder-flow");
 // Get a reference to the calcite-table
 const table = document.querySelector("calcite-table");
 
-// Step 1: Create a web map
+// Step 1: Create a web map and a map view
 // Create a WebMap
 const map = new WebMap({
   portalItem: {
@@ -30,7 +30,6 @@ const map = new WebMap({
   },
 });
 
-// Step 2: Create a MapView
 // Create a MapView
 const view = new MapView({
   container: "viewDiv",
@@ -38,17 +37,17 @@ const view = new MapView({
   popupEnabled: false,
 });
 
-// Wait for the view to load
+// Step 2: Wait for the view to load and get references to the layers in the web map
 view.when(async () => {
   // Wait for all the map layers to load
   await view.map.loadAll();
 
-  // Step 3: Get references to the layers in the web map
+  // Get references to the layers in the web map
   const buildingLayer = view.map.findLayerById("b5435bf9aa674c4f97dab633ce50ff65");
   const orientedImageryLayer = view.map.findLayerById("18df554895b-layer-5");
   const workOrdersLayer = view.map.findLayerById("5a5382f83c48491c888184bd664cb5d8");
 
-  // Step 4: Create the OrientedImageryViewer
+  // Step 3: Create the OrientedImageryViewer
   // Create an OrientedImageryViewer widget
   const orientedImageryViewer = new OrientedImageryViewer({
     container: "oi-container",
@@ -58,7 +57,7 @@ view.when(async () => {
     view,
   });
 
-  // Step 5: Add a load best image button to the work orders popup
+  // Step 4: Add a load best image button to the work orders popup
   const customContent = new CustomContent({
     outFields: ["*"],
     creator: (event) => {
@@ -73,7 +72,7 @@ view.when(async () => {
   });
   workOrdersLayer.popupTemplate.content.push(customContent);
 
-  // Step 6: Set up the click event for the view
+  // Step 5: Set up the click event for the view
   // Set up the click event for the view
   view.on("click", (event) => {
     // If the map image conversion tool is active, don't do anything
@@ -85,32 +84,28 @@ view.when(async () => {
     event.stopPropagation();
 
     // Hit test the work orders layer
-    view
-      .hitTest(event, {
-        layer: workOrdersLayer,
-      })
-      .then((response) => {
-        // Get the results from the hit test response
-        const { results } = response;
+    view.hitTest(event).then((response) => {
+      // Get the results from the hit test response
+      const { results } = response;
 
-        // If there is a graphic from the work orders layer in the results, open the popup
-        // Otherwise, load the best image from the oriented imagery layer
-        if (results[0]?.graphic?.layer === workOrdersLayer || results[0]?.graphic?.layer === buildingLayer) {
-          const popup = new Popup({
-            dockEnabled: true,
-            dockOptions: {
-              breakpoint: false,
-            },
-          });
-          view.popup = popup;
-          popup.open({
-            location: event.mapPoint,
-            features: [results[0].graphic],
-          });
-        } else {
-          orientedImageryViewer.loadBestImage(event.mapPoint);
-        }
-      });
+      // If there is a graphic from the work orders layer in the results, open the popup
+      // Otherwise, load the best image from the oriented imagery layer
+      if (results[0]?.graphic?.layer === workOrdersLayer || results[0]?.graphic?.layer === buildingLayer) {
+        const popup = new Popup({
+          dockEnabled: true,
+          dockOptions: {
+            breakpoint: false,
+          },
+        });
+        view.popup = popup;
+        popup.open({
+          location: event.mapPoint,
+          features: [results[0].graphic],
+        });
+      } else {
+        orientedImageryViewer.loadBestImage(event.mapPoint);
+      }
+    });
   });
 
   // When the create-work-flow-button is clicked, start the work order flow
@@ -147,14 +142,12 @@ async function createWorkOrderFlow(orientedImageryViewer, workOrdersLayer) {
   // Append the workflow item to the work order flow
   flow.append(workOrderFlowItem);
 
-  // Step 7: Create the Editor widget
   // Create a new Editor widget
   editor = new Editor({
     view: view,
     container: workOrderFlowItem,
   });
 
-  // Step 8: Start the create features workflow
   // If the oriented imagery viewer has a reference point add a new feature to the work orders layer
   // If not, alert the user and cancel the workflow
   if (orientedImageryViewer.referencePoint) {
